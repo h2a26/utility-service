@@ -9,10 +9,22 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
-        [x-cloak] { display: none !important; }
-        .htmx-indicator { display: none; }
-        .htmx-request .htmx-indicator { display: inline; }
-        .htmx-request.disabled-during-request { pointer-events: none; opacity: 0.5; }
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .htmx-indicator {
+            display: none;
+        }
+
+        .htmx-request .htmx-indicator {
+            display: inline;
+        }
+
+        .htmx-request.disabled-during-request {
+            pointer-events: none;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen" x-data="uploadManager()">
@@ -36,7 +48,8 @@
                                 <i data-lucide="upload-cloud" class="w-8 h-8 text-blue-900"></i>
                             </div>
                             <h2 class="text-xl font-semibold text-gray-900 mb-2">Upload Excel File</h2>
-                            <p class="text-sm text-gray-600">Upload your electricity bill Excel file (.xlsx) to start processing</p>
+                            <p class="text-sm text-gray-600">Upload your electricity bill Excel file (.xlsx) to start
+                                processing</p>
                         </div>
 
                         <form id="upload-form"
@@ -44,12 +57,16 @@
                               hx-target="#upload-result-container"
                               hx-encoding="multipart/form-data"
                               hx-indicator="#upload-spinner"
-                              hx-on::after-request="if(event.detail.successful) $data.resetForm()"
                               class="space-y-4">
 
                             <div class="border-2 border-dashed rounded-lg p-8 text-center transition-colors relative"
-                                 :class="isDragging ? 'border-blue-500 bg-blue-50' : (fileSelected ? 'border-green-400 bg-green-50' : 'border-gray-300')"
-                                 @dragover.prevent="isDragging = true"
+                                 :class="{
+                                            'border-blue-500 bg-blue-50': isDragging,
+                                            'border-green-400 bg-green-50': fileSelected && !isUploading,
+                                            'border-gray-300': !isDragging && !fileSelected,
+                                            'opacity-50 pointer-events-none': isUploading
+                                         }"
+                                 @dragover.prevent="if(!isUploading) isDragging = true"
                                  @dragleave.prevent="isDragging = false"
                                  @drop.prevent="handleDrop($event)">
 
@@ -59,6 +76,7 @@
                                        accept=".xlsx,.xls"
                                        class="hidden"
                                        @change="handleFileSelect($event)"
+                                       :disabled="isUploading"
                                        required/>
 
                                 <div x-show="fileSelected" x-cloak>
@@ -68,7 +86,7 @@
                                             <p class="text-sm font-medium text-gray-900" x-text="fileName"></p>
                                             <p class="text-xs text-gray-500" x-text="fileSize"></p>
                                         </div>
-                                        <button type="button" @click="resetForm()"
+                                        <button type="button" @click="resetForm()" :disabled="isUploading"
                                                 class="text-gray-400 hover:text-red-500 transition-colors">
                                             <i data-lucide="x-circle" class="w-5 h-5"></i>
                                         </button>
@@ -78,29 +96,26 @@
                                 <div x-show="!fileSelected">
                                     <i data-lucide="file-plus" class="w-12 h-12 text-gray-400 mx-auto mb-3"></i>
                                     <p class="text-gray-600 mb-2">Drag and drop your file here, or</p>
-                                    <button type="button"
-                                            @click="$refs.fileInput.click()"
+                                    <button type="button" @click="$refs.fileInput.click()"
                                             class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                                        <i data-lucide="folder-open" class="w-4 h-4 mr-2"></i>
                                         Browse Files
                                     </button>
                                 </div>
                             </div>
 
                             <button type="submit"
-                                    :disabled="!fileSelected"
+                                    :disabled="!fileSelected || isUploading"
                                     class="w-full flex items-center justify-center px-6 py-3 bg-blue-900 text-white rounded-lg font-medium hover:bg-blue-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
-                                    <span id="upload-spinner" class="htmx-indicator mr-3">
-                                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                                             fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                                    stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor"
-                                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                    </span>
-                                <i data-lucide="upload" class="w-5 h-5 mr-2" x-show="!fileSelected"></i>
-                                <span x-text="fileSelected ? 'Upload & Process ' + fileName : 'Select a file'"></span>
+                                            <span id="upload-spinner" class="htmx-indicator mr-3">
+                                                 <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                                                     <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                             stroke="currentColor" stroke-width="4"></circle>
+                                                     <path class="opacity-75" fill="currentColor"
+                                                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                 </svg>
+                                            </span>
+                                <i data-lucide="upload" class="w-5 h-5 mr-2" x-show="!isUploading"></i>
+                                <span x-text="isUploading ? 'Uploading...' : (fileSelected ? 'Upload ' + fileName : 'Select a file')"></span>
                             </button>
                         </form>
                     </div>
@@ -129,12 +144,24 @@
                         <table class="w-full">
                             <thead class="bg-blue-50 border-b border-gray-200">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Job ID</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Filename</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Success</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Failed</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Job ID
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Filename
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Success
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Failed
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    Date
+                                </th>
                             </tr>
                             </thead>
                             <tbody id="job-table-body"
@@ -156,33 +183,44 @@
         return {
             isDragging: false,
             fileSelected: false,
+            isUploading: false,
             fileName: '',
             fileSize: '',
+
             handleFileSelect(event) {
+                if (this.isUploading) return;
                 const file = event.target.files[0];
                 if (file) this.stageFile(file);
             },
+
             handleDrop(event) {
+                if (this.isUploading) return;
                 this.isDragging = false;
                 const file = event.dataTransfer.files[0];
                 if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
-                    this.$refs.fileInput.files = event.dataTransfer.files;
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    this.$refs.fileInput.files = dataTransfer.files;
                     this.stageFile(file);
                 }
             },
+
             stageFile(file) {
                 this.fileSelected = true;
                 this.fileName = file.name;
                 this.fileSize = this.formatFileSize(file.size);
                 this.$nextTick(() => lucide.createIcons());
             },
+
             resetForm() {
                 this.fileSelected = false;
                 this.fileName = '';
                 this.fileSize = '';
                 this.$refs.fileInput.value = '';
+                this.isUploading = false; // Reset the loading state
                 this.$nextTick(() => lucide.createIcons());
             },
+
             formatFileSize(bytes) {
                 if (bytes === 0) return '0 Bytes';
                 const k = 1024;
@@ -193,7 +231,30 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+    // HTMX Event Listeners to handle the "Subtle Bugs"
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+
+        const form = document.getElementById('upload-form');
+
+        // 1. When request starts: trigger loading state
+        form.addEventListener('htmx:beforeRequest', () => {
+            // Access Alpine data directly
+            const data = Alpine.$data(form);
+            data.isUploading = true;
+        });
+
+        // 2. When request finishes: clear form if successful
+        form.addEventListener('htmx:afterRequest', (event) => {
+            const data = Alpine.$data(form);
+            data.isUploading = false;
+
+            if (event.detail.successful) {
+                data.resetForm(); // Auto-clear the file and UI
+            }
+        });
+    });
+
     document.body.addEventListener('htmx:afterSwap', () => lucide.createIcons());
 </script>
 </body>
