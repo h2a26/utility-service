@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Bill Upload - MPay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="flex h-screen overflow-hidden">
+        <div th:replace="~{layout/sidebar :: sidebar}"></div>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <main class="flex-1 overflow-y-auto p-6">
+                <div class="max-w-7xl mx-auto">
+                    <div class="mb-6">
+                        <h1 class="text-2xl font-bold text-gray-900">Electricity Bill Upload</h1>
+                        <p class="text-sm text-gray-500 mt-1">Dashboard / Upload</p>
+                    </div>
+
+                    <div id="upload-result-container"></div>
+
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
+                        <div class="max-w-2xl mx-auto">
+                            <div class="text-center mb-6">
+                                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-full mb-4">
+                                    <i data-lucide="upload-cloud" class="w-8 h-8 text-blue-900"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold text-gray-900 mb-2">Upload Excel File</h2>
+                                <p class="text-sm text-gray-600">Upload your electricity bill Excel file (.xlsx) to start processing</p>
+                            </div>
+
+                            <form id="upload-form"
+                                  hx-post="/dashboard/api/upload"
+                                  hx-target="#upload-result-container"
+                                  hx-encoding="multipart/form-data"
+                                  hx-indicator="#upload-spinner"
+                                  class="space-y-4">
+
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors" id="dropzone">
+                                    <input type="file"
+                                           name="file"
+                                           id="file-input"
+                                           accept=".xlsx,.xls"
+                                           class="hidden"
+                                           required />
+
+                                    <div id="file-info" class="hidden">
+                                        <div class="flex items-center justify-center space-x-3 mb-4">
+                                            <i data-lucide="file-spreadsheet" class="w-8 h-8 text-green-600"></i>
+                                            <div class="text-left">
+                                                <p id="file-name" class="text-sm font-medium text-gray-900"></p>
+                                                <p id="file-size" class="text-xs text-gray-500"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="drop-prompt">
+                                        <i data-lucide="file-plus" class="w-12 h-12 text-gray-400 mx-auto mb-3"></i>
+                                        <p class="text-gray-600 mb-2">Drag and drop your file here, or</p>
+                                    </div>
+
+                                    <button type="button"
+                                            onclick="document.getElementById('file-input').click()"
+                                            class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i data-lucide="folder-open" class="w-4 h-4 mr-2"></i>
+                                        Browse Files
+                                    </button>
+                                </div>
+
+                                <button type="submit"
+                                        id="upload-button"
+                                        disabled
+                                        class="w-full flex items-center justify-center px-6 py-3 bg-blue-900 text-white rounded-lg font-medium hover:bg-blue-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
+                                    <span id="upload-spinner" class="htmx-indicator">
+                                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </span>
+                                    <i data-lucide="upload" class="w-5 h-5 mr-2"></i>
+                                    <span>Upload & Process</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-lg font-semibold text-gray-900">Recent Uploads</h2>
+                                <button hx-get="/dashboard/api/jobs/recent"
+                                        hx-target="#job-table-body"
+                                        hx-trigger="click"
+                                        class="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                                    Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-blue-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Job ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Filename</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Success</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Failed</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="job-table-body"
+                                       hx-get="/dashboard/api/jobs/recent"
+                                       hx-trigger="load, every 5s"
+                                       hx-swap="innerHTML"
+                                       class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-2 text-gray-300"></i>
+                                            <p>No recent uploads</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        document.body.addEventListener('htmx:afterSwap', function() {
+            lucide.createIcons();
+        });
+
+        const fileInput = document.getElementById('file-input');
+        const uploadButton = document.getElementById('upload-button');
+        const fileInfo = document.getElementById('file-info');
+        const dropPrompt = document.getElementById('drop-prompt');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        const dropzone = document.getElementById('dropzone');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                fileInfo.classList.remove('hidden');
+                dropPrompt.classList.add('hidden');
+                uploadButton.disabled = false;
+                dropzone.classList.add('border-green-400', 'bg-green-50');
+                lucide.createIcons();
+            }
+        });
+
+        dropzone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropzone.classList.add('border-blue-400', 'bg-blue-50');
+        });
+
+        dropzone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            dropzone.classList.remove('border-blue-400', 'bg-blue-50');
+        });
+
+        dropzone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropzone.classList.remove('border-blue-400', 'bg-blue-50');
+            const file = e.dataTransfer.files[0];
+            if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+                fileInput.files = e.dataTransfer.files;
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        });
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        document.body.addEventListener('htmx:afterRequest', function(event) {
+            if (event.detail.successful) {
+                fileInput.value = '';
+                fileInfo.classList.add('hidden');
+                dropPrompt.classList.remove('hidden');
+                uploadButton.disabled = true;
+                dropzone.classList.remove('border-green-400', 'bg-green-50');
+            }
+        });
+    </script>
+</body>
+</html>
