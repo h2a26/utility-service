@@ -13,6 +13,8 @@ public class BillMapper {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     public static ElectricityBill mapToEntity(ElectricityBillRaw raw) {
+        LocalDate billDueDate = LocalDate.parse(raw.billDueDate(), DATE_FORMATTER);
+
         return ElectricityBill.builder()
                 .ledgerNo(raw.ledgerNo())
                 .consumerNo(raw.consumerNo())
@@ -20,7 +22,9 @@ public class BillMapper {
                 .consumerName(raw.consumerName())
                 .address(raw.address())
                 .billCode(raw.billCode())
-                .billDueDate(LocalDate.parse(raw.billDueDate(), DATE_FORMATTER))
+                .billDueDate(billDueDate)
+                .billMonth(billDueDate.getMonthValue())
+                .billYear(billDueDate.getYear())
                 .usedUnit(Integer.parseInt(raw.usedUnit()))
                 .billAmount(parseDecimal(raw.billAmount()))
                 .serviceCharges(parseDecimal(raw.serviceCharges()))
@@ -31,6 +35,7 @@ public class BillMapper {
                 .debtBalance(parseDecimal(raw.debtBalance()))
                 .installationFee(parseDecimal(raw.installationFee()))
                 .grandTotalAmount(parseDecimal(raw.grandTotalAmount()))
+                .isActiveConsumer(true)
                 .township(raw.township())
                 .terrifCode(raw.terrifCode())
                 .readingDate(parseDateTime(raw.readingDate()))
