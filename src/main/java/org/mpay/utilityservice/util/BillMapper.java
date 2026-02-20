@@ -1,7 +1,9 @@
 package org.mpay.utilityservice.util;
 
+import org.mpay.utilityservice.dto.BillValidationResult;
 import org.mpay.utilityservice.dto.ElectricityBillRaw;
 import org.mpay.utilityservice.entity.ElectricityBill;
+import org.mpay.utilityservice.entity.FailedElectricityBill;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -47,6 +49,43 @@ public class BillMapper {
                 .area(raw.area())
                 .billNo(raw.billNo())
                 .deposit(parseDecimal(raw.deposit()))
+                .build();
+    }
+
+    public static FailedElectricityBill mapToFailedEntity(BillValidationResult result, Long jobId) {
+        ElectricityBillRaw raw = result.rawData();
+
+        return FailedElectricityBill.builder()
+                .jobId(jobId)
+                .failureReason(result.errorMsg())
+                .ledgerNo(raw.ledgerNo())
+                .consumerNo(raw.consumerNo())
+                .meterNo(raw.meterNo())
+                .consumerName(raw.consumerName())
+                .address(raw.address())
+                .billCode(raw.billCode())
+                .billDueDate(raw.billDueDate())
+                .usedUnit(raw.usedUnit())
+                .billAmount(raw.billAmount())
+                .serviceCharges(raw.serviceCharges())
+                .horsePowerCharges(raw.horsePowerCharges())
+                .discount(raw.discount())
+                .lastBalance(raw.lastBalance())
+                .totalBillAmount(raw.totalBillAmount())
+                .debtBalance(raw.debtBalance())
+                .installationFee(raw.installationFee())
+                .grandTotalAmount(raw.grandTotalAmount())
+                .township(raw.township())
+                .terrifCode(raw.terrifCode())
+                .readingDate(raw.readingDate())
+                .previousUnit(raw.previousUnit())
+                .currentUnit(raw.currentUnit())
+                .houseNo(raw.houseNo())
+                .road(raw.road())
+                .quarter(raw.quarter())
+                .area(raw.area())
+                .billNo(raw.billNo())
+                .deposit(raw.deposit())
                 .build();
     }
 

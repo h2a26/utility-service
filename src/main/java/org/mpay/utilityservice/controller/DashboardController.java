@@ -18,18 +18,6 @@ public class DashboardController {
         return "dashboard/index";
     }
 
-    @GetMapping("/dashboard/bills")
-    public String bills(Model model) {
-        model.addAttribute("currentPage", "bills");
-        return "dashboard/bills";
-    }
-
-    @GetMapping("/dashboard/reports")
-    public String reports(Model model) {
-        model.addAttribute("currentPage", "reports");
-        return "dashboard/reports";
-    }
-
     @GetMapping("/dashboard/settings")
     public String settings(Model model) {
         model.addAttribute("currentPage", "settings");

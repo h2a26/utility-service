@@ -35,18 +35,6 @@ public class JobMonitoringService {
         }
     }
 
-    public JobExecutionInfo getJobExecutionInfo(Long jobExecutionId) {
-        try {
-            JobExecution jobExecution = jobExplorer.getJobExecution(jobExecutionId);
-            if (jobExecution != null) {
-                return mapToJobExecutionInfo(jobExecution);
-            }
-        } catch (Exception e) {
-            log.error("Error fetching job execution for ID: {}", jobExecutionId, e);
-        }
-        return null;
-    }
-
     private JobExecutionInfo mapToJobExecutionInfo(JobExecution jobExecution) {
         String fileName = jobExecution.getJobParameters().getString("originalFileName");
         if (fileName == null) {

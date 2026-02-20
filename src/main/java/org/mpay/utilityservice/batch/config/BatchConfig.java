@@ -1,6 +1,5 @@
 package org.mpay.utilityservice.batch.config;
 
-import lombok.RequiredArgsConstructor;
 import org.mpay.utilityservice.batch.listener.FileCleanupListener;
 import org.mpay.utilityservice.batch.processor.ElectricityBillProcessor;
 import org.mpay.utilityservice.batch.writer.ElectricityBillWriter;
