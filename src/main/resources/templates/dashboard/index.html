@@ -41,15 +41,18 @@
 
                 <div id="upload-result-container"></div>
 
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
-                    <div class="max-w-2xl mx-auto">
-                        <div class="text-center mb-6">
-                            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-full mb-4">
-                                <i data-lucide="upload-cloud" class="w-8 h-8 text-blue-900"></i>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                    <div class="flex flex-col md:flex-row md:items-start md:space-x-8">
+
+                        <div class="md:w-1/3 mb-6 md:mb-0">
+                            <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-50 rounded-lg mb-4">
+                                <i data-lucide="file-spreadsheet" class="w-6 h-6 text-blue-900"></i>
                             </div>
-                            <h2 class="text-xl font-semibold text-gray-900 mb-2">Upload Excel File</h2>
-                            <p class="text-sm text-gray-600">Upload your electricity bill Excel file (.xlsx) to start
-                                processing</p>
+                            <h2 class="text-xl font-bold text-gray-900 mb-2">Upload Data</h2>
+                            <p class="text-sm text-gray-500 leading-relaxed">
+                                Upload your electricity bill Excel file (.xlsx) to initiate the batch processing.
+                                System will validate rows automatically.
+                            </p>
                         </div>
 
                         <form id="upload-form"
@@ -57,66 +60,66 @@
                               hx-target="#upload-result-container"
                               hx-encoding="multipart/form-data"
                               hx-indicator="#upload-spinner"
-                              class="space-y-4">
+                              class="flex-1 space-y-4">
 
-                            <div class="border-2 border-dashed rounded-lg p-8 text-center transition-colors relative"
+                            <div class="group border-2 border-dashed rounded-xl p-6 text-center transition-all relative"
                                  :class="{
-                                            'border-blue-500 bg-blue-50': isDragging,
-                                            'border-green-400 bg-green-50': fileSelected && !isUploading,
-                                            'border-gray-300': !isDragging && !fileSelected,
-                                            'opacity-50 pointer-events-none': isUploading
-                                         }"
+                    'border-blue-500 bg-blue-50': isDragging,
+                    'border-green-500 bg-green-50/50': fileSelected && !isUploading,
+                    'border-gray-200 hover:border-gray-300 bg-gray-50/30': !isDragging && !fileSelected,
+                    'opacity-60 cursor-not-allowed': isUploading
+                 }"
                                  @dragover.prevent="if(!isUploading) isDragging = true"
                                  @dragleave.prevent="isDragging = false"
                                  @drop.prevent="handleDrop($event)">
 
-                                <input type="file"
-                                       name="file"
-                                       x-ref="fileInput"
-                                       accept=".xlsx,.xls"
-                                       class="hidden"
-                                       @change="handleFileSelect($event)"
-                                       :disabled="isUploading"
-                                       required/>
+                                <input type="file" name="file" x-ref="fileInput" accept=".xlsx,.xls" class="hidden"
+                                       @change="handleFileSelect($event)" :disabled="isUploading" required/>
 
-                                <div x-show="fileSelected" x-cloak>
-                                    <div class="flex items-center justify-center space-x-3 mb-4">
-                                        <i data-lucide="file-spreadsheet" class="w-8 h-8 text-green-600"></i>
-                                        <div class="text-left">
-                                            <p class="text-sm font-medium text-gray-900" x-text="fileName"></p>
+                                <div x-show="fileSelected" x-cloak
+                                     class="flex items-center justify-between bg-white p-3 rounded-lg border border-green-200 shadow-sm">
+                                    <div class="flex items-center space-x-3 text-left">
+                                        <div class="p-2 bg-green-100 rounded">
+                                            <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+                                        </div>
+                                        <div class="overflow-hidden">
+                                            <p class="text-sm font-semibold text-gray-900 truncate max-w-[200px]"
+                                               x-text="fileName"></p>
                                             <p class="text-xs text-gray-500" x-text="fileSize"></p>
                                         </div>
-                                        <button type="button" @click="resetForm()" :disabled="isUploading"
-                                                class="text-gray-400 hover:text-red-500 transition-colors">
-                                            <i data-lucide="x-circle" class="w-5 h-5"></i>
-                                        </button>
                                     </div>
+                                    <button type="button" @click="resetForm()" :disabled="isUploading"
+                                            class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
                                 </div>
 
-                                <div x-show="!fileSelected">
-                                    <i data-lucide="file-plus" class="w-12 h-12 text-gray-400 mx-auto mb-3"></i>
-                                    <p class="text-gray-600 mb-2">Drag and drop your file here, or</p>
+                                <div x-show="!fileSelected" class="py-2">
+                                    <p class="text-sm text-gray-600 mb-3">Drag file here or</p>
                                     <button type="button" @click="$refs.fileInput.click()"
-                                            class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                                        Browse Files
+                                            class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 shadow-sm rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+                                        <i data-lucide="search" class="w-4 h-4 mr-2"></i>
+                                        Choose File
                                     </button>
                                 </div>
                             </div>
 
-                            <button type="submit"
-                                    :disabled="!fileSelected || isUploading"
-                                    class="w-full flex items-center justify-center px-6 py-3 bg-blue-900 text-white rounded-lg font-medium hover:bg-blue-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
-                                            <span id="upload-spinner" class="htmx-indicator mr-3">
-                                                 <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-                                                     <circle class="opacity-25" cx="12" cy="12" r="10"
-                                                             stroke="currentColor" stroke-width="4"></circle>
-                                                     <path class="opacity-75" fill="currentColor"
-                                                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                 </svg>
-                                            </span>
-                                <i data-lucide="upload" class="w-5 h-5 mr-2" x-show="!isUploading"></i>
-                                <span x-text="isUploading ? 'Uploading...' : (fileSelected ? 'Upload ' + fileName : 'Select a file')"></span>
-                            </button>
+                            <div class="flex justify-end">
+                                <button type="submit"
+                                        :disabled="!fileSelected || isUploading"
+                                        class="inline-flex items-center px-8 py-2.5 bg-blue-900 text-white rounded-lg font-medium hover:bg-blue-800 transition-all shadow-sm disabled:bg-gray-300 disabled:shadow-none">
+                    <span id="upload-spinner" class="htmx-indicator mr-2">
+                         <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                     stroke-width="4"></circle>
+                             <path class="opacity-75" fill="currentColor"
+                                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                         </svg>
+                    </span>
+                                    <i data-lucide="zap" class="w-4 h-4 mr-2" x-show="!isUploading"></i>
+                                    <span x-text="isUploading ? 'Processing...' : 'Start Upload'"></span>
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
