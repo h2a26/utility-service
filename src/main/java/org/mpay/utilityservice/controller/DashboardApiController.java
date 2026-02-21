@@ -76,14 +76,16 @@ public class DashboardApiController {
         return "fragments/job-table :: job-rows";
     }
 
-
-    @GetMapping("/jobs/export-failed")
-    public ResponseEntity<byte[]> exportFailedReport() {
+    @GetMapping("/jobs/{jobId}/export-failed")
+    public ResponseEntity<byte[]> exportFailedReportByJob(@PathVariable Long jobId) {
         try {
-            List<FailedElectricityBill> failedBills = billService.getFailedBillsForReport();
+            // Fetch only for this specific job
+            List<FailedElectricityBill> failedBills = billService.getFailedBillsByJobId(jobId);
+
             byte[] excelContent = ExcelExportUtils.generateFailedBillReport(failedBills);
 
-            String fileName = "failed_report_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm")) + ".xlsx";
+            String fileName = "failed_report_job_" + jobId + "_" +
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm")) + ".xlsx";
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
@@ -91,7 +93,7 @@ public class DashboardApiController {
                     .body(excelContent);
 
         } catch (Exception e) {
-            log.error("Export failed report error", e);
+            log.error("Export failed report error for job: {}", jobId, e);
             return ResponseEntity.internalServerError().build();
         }
     }

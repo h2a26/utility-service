@@ -10,7 +10,4 @@ import java.util.List;
 public interface FailedElectricityBillRepository extends JpaRepository<FailedElectricityBill, Long> {
     // Used to fetch records for the Export Failed Report button
     List<FailedElectricityBill> findByJobId(Long jobId);
-
-    // Used for a general "all failed" report if needed
-    List<FailedElectricityBill> findTop1000ByOrderByCreatedDateDesc();
 }

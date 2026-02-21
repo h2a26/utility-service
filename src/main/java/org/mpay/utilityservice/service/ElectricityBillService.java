@@ -32,7 +32,7 @@ public class ElectricityBillService {
         }
     }
 
-    public List<FailedElectricityBill> getFailedBillsForReport() {
-        return failedRepository.findTop1000ByOrderByCreatedDateDesc();
+    public List<FailedElectricityBill> getFailedBillsByJobId(Long jobId) {
+        return failedRepository.findByJobId(jobId);
     }
 }

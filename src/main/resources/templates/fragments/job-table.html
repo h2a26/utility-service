@@ -22,7 +22,8 @@
 
         <td class="px-6 py-4 whitespace-nowrap text-center">
             <div class="flex flex-col items-center justify-center">
-                <span class="text-sm font-bold text-green-600" th:text="${#numbers.formatInteger(job.successCount, 0, 'COMMA')}">0</span>
+                <span class="text-sm font-bold text-green-600"
+                      th:text="${#numbers.formatInteger(job.successCount, 0, 'COMMA')}">0</span>
                 <span class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Passed</span>
             </div>
         </td>
@@ -42,6 +43,23 @@
                 <span th:text="${job.startTime}"></span>
             </div>
         </td>
+
+        <td class="px-6 py-4 whitespace-nowrap text-center">
+            <div class="flex items-center justify-center">
+                <a th:if="${job.failedCount > 0}"
+                   th:href="@{/dashboard/api/jobs/{id}/export-failed(id=${job.jobId})}"
+                   class="inline-flex items-center p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all border border-transparent hover:border-red-100"
+                   title="Download Failed Report">
+                    <i data-lucide="file-down" class="w-4 h-4"></i>
+                    <span class="ml-1 text-xs font-semibold">Report</span>
+                </a>
+
+                <span th:if="${job.failedCount == 0}" class="text-gray-300">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                </span>
+            </div>
+        </td>
+    </tr>
     </tr>
 
     <tr th:if="${#lists.isEmpty(jobs)}">
