@@ -11,16 +11,23 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        jdbc.batch_size: 200
+        order_inserts: true
+        order_updates: true
+        jdbc.batch_versioned_data: true
     open-in-view: false
   batch:
     jdbc:
       initialize-schema: always
     job:
       enabled: false
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 
 spring-batch:
   chunk-size: 2000

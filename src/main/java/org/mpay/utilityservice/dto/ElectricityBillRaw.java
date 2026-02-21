@@ -1,6 +1,7 @@
 package org.mpay.utilityservice.dto;
 
 public record ElectricityBillRaw(
+        int rowNumber,
         String ledgerNo,
         String consumerNo,
         String meterNo,

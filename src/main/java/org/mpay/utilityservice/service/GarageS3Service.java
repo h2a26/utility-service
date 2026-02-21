@@ -53,7 +53,7 @@ public class GarageS3Service {
         }
 
         // 2. Create a unique filename to prevent collisions during concurrent uploads
-        String simpleName = UUID.randomUUID() + "_" + s3Key.substring(s3Key.lastIndexOf("/") + 1);
+        String simpleName = s3Key.substring(s3Key.lastIndexOf("/") + 1);
         Path targetPath = folderPath.resolve(simpleName);
 
         log.info("Downloading S3 object to local path: {}", targetPath);

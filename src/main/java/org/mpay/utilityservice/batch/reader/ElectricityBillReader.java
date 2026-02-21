@@ -15,44 +15,77 @@ import org.springframework.stereotype.Component;
 @Component
 public class ElectricityBillReader {
 
-    /**
-     * The reader is StepScoped so it can access jobParameters at runtime.
-     * It reads from the local path provided by the Controller/S3 download.
-     */
     @Bean
     @StepScope
     public PoiItemReader<ElectricityBillRaw> excelBillReader(
             @Value("#{jobParameters['localFilePath']}") String path) {
 
         log.info("Initializing Excel Reader for file: {}", path);
-
         PoiItemReader<ElectricityBillRaw> reader = new PoiItemReader<>();
-
         reader.setName("electricityBillExcelReader");
-
-        // 1. Set the local file resource
         reader.setResource(new FileSystemResource(path));
 
-        // 2. Skip the header row
+        // LinesToSkip(1) is cleaner for skipping headers in PoiItemReader
         reader.setLinesToSkip(1);
-
-        // 3. Map Excel Rows to our Raw DTO
         reader.setRowMapper(billRowMapper());
 
+        // Essential for multi-threaded steps to prevent state-save conflicts
+        reader.setSaveState(false);
         return reader;
     }
 
     private RowMapper<ElectricityBillRaw> billRowMapper() {
         return (RowSet rowSet) -> {
             String[] row = rowSet.getCurrentRow();
+
+            // 1. Check for physical null row or empty array
+            if (row == null || row.length == 0) {
+                return null;
+            }
+
+            // 2. Strict Ghost Row Detection:
+            // If the first two mandatory columns are empty, we hit the end of data.
+            String ledgerNo = safeGet(row, 0);
+            String consumerNo = safeGet(row, 1);
+
+            if (ledgerNo.isEmpty() && consumerNo.isEmpty()) {
+                log.debug("End of data reached at row index: {}", rowSet.getCurrentRowIndex());
+                return null;
+            }
+
+            // Excel row index is 0-based, adding 1 for user-friendly logging (e.g., Row 2)
+            int currentRowIndex = rowSet.getCurrentRowIndex() + 1;
+
             return new ElectricityBillRaw(
-                    safeGet(row, 0), safeGet(row, 1), safeGet(row, 2), safeGet(row, 3),
-                    safeGet(row, 4), safeGet(row, 5), safeGet(row, 6), safeGet(row, 7),
-                    safeGet(row, 8), safeGet(row, 9), safeGet(row, 10), safeGet(row, 11),
-                    safeGet(row, 12), safeGet(row, 13), safeGet(row, 14), safeGet(row, 15),
-                    safeGet(row, 16), safeGet(row, 17), safeGet(row, 18), safeGet(row, 19),
-                    safeGet(row, 20), safeGet(row, 21), safeGet(row, 22), safeGet(row, 23),
-                    safeGet(row, 24), safeGet(row, 25), safeGet(row, 26), safeGet(row, 27)
+                    currentRowIndex,
+                    ledgerNo,
+                    consumerNo,
+                    safeGet(row, 2), // meterNo
+                    safeGet(row, 3), // consumerName
+                    safeGet(row, 4), // address
+                    safeGet(row, 5), // billCode
+                    safeGet(row, 6), // billDueDate
+                    safeGet(row, 7), // usedUnit
+                    safeGet(row, 8), // billAmount
+                    safeGet(row, 9), // serviceCharges
+                    safeGet(row, 10), // horsePowerCharges
+                    safeGet(row, 11), // discount
+                    safeGet(row, 12), // lastBalance
+                    safeGet(row, 13), // totalBillAmount
+                    safeGet(row, 14), // debtBalance
+                    safeGet(row, 15), // installationFee
+                    safeGet(row, 16), // grandTotalAmount
+                    safeGet(row, 17), // township
+                    safeGet(row, 18), // terrifCode
+                    safeGet(row, 19), // readingDate
+                    safeGet(row, 20), // previousUnit
+                    safeGet(row, 21), // currentUnit
+                    safeGet(row, 22), // houseNo
+                    safeGet(row, 23), // road
+                    safeGet(row, 24), // quarter
+                    safeGet(row, 25), // area
+                    safeGet(row, 26), // billNo
+                    safeGet(row, 27)  // deposit
             );
         };
     }
