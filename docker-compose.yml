@@ -1,0 +1,30 @@
+services:
+  app:
+    build: .
+    container_name: utility-service
+    ports:
+      - "8080:8080"
+    environment:
+      # Activate the SIT profile
+      - SPRING_PROFILES_ACTIVE=sit
+
+      # Database connection to the external server
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://139.59.53.120:5433/postgres?currentSchema=prepost&options=-c%20TimeZone=Asia/Yangon
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=Adm1n
+
+      # Garage S3 credentials (overriding the .yml defaults)
+      - GARAGE_HOST=139.59.53.120
+      - GARAGE_PORT=3900
+      - GARAGE_ACCESS_KEY=GKdc6549790849c5c032798435
+      - GARAGE_SECRET_KEY=c4bc9b09f358164cb213bbb9694074a2b79bd742283dca6184eb19d7eb249ff4
+      - GARAGE_BUCKET=sit-mpay
+      - GARAGE_ELECTRICITYBILL_DIR=electricitybill
+
+      # Path mapping to match the 'storage' section in your YAML
+      - TEMP_PATH=/app/batch-temp
+
+    volumes:
+      # Persist the batch-temp folder locally so you can inspect files if needed
+      - ./batch-temp:/app/batch-temp
+    restart: unless-stopped
