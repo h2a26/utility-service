@@ -17,5 +17,4 @@ public class JobExecutionInfo {
     private Long failedCount;
     private String startTime;
     private String endTime;
-    private Integer progressPercentage;
 }

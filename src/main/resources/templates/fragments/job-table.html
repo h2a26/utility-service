@@ -2,31 +2,56 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="job-rows">
-    <tr th:each="job : ${jobs}" class="hover:bg-gray-50 transition-colors">
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span class="text-sm font-medium text-gray-900" th:text="${job.jobId}"></span>
+    <tr th:each="job : ${jobs}" class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+        <td class="px-6 py-4 whitespace-nowrap text-center">
+            <span class="text-xs font-mono font-bold text-gray-400" th:text="'#' + ${job.jobId}"></span>
         </td>
+
         <td class="px-6 py-4">
-            <div class="flex items-center">
-                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-gray-400 mr-2"></i>
-                <span class="text-sm text-gray-900 truncate max-w-xs" th:text="${job.fileName}"></span>
+            <div class="flex items-center justify-start">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-500 mr-2"></i>
+                <span class="text-sm font-medium text-gray-900 truncate max-w-xs" th:text="${job.fileName}"></span>
             </div>
         </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span th:replace="~{fragments/job-status :: status-badge(${job})}"></span>
-        </td>
+
         <td class="px-6 py-4 whitespace-nowrap text-center">
-            <span class="text-sm font-semibold text-green-600" th:text="${job.successCount}">0</span>
+            <div class="flex justify-center">
+                <span th:replace="~{fragments/job-status :: status-badge(${job})}"></span>
+            </div>
         </td>
+
         <td class="px-6 py-4 whitespace-nowrap text-center">
-            <span class="text-sm font-semibold text-red-600" th:text="${job.failedCount}">0</span>
+            <div class="flex flex-col items-center justify-center">
+                <span class="text-sm font-bold text-green-600" th:text="${#numbers.formatInteger(job.successCount, 0, 'COMMA')}">0</span>
+                <span class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Passed</span>
+            </div>
         </td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${job.startTime}"></td>
+
+        <td class="px-6 py-4 whitespace-nowrap text-center">
+            <div class="flex flex-col items-center justify-center">
+                <span class="text-sm font-bold"
+                      th:classappend="${job.failedCount > 0 ? 'text-red-600' : 'text-gray-300'}"
+                      th:text="${#numbers.formatInteger(job.failedCount, 0, 'COMMA')}">0</span>
+                <span class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Failed</span>
+            </div>
+        </td>
+
+        <td class="px-6 py-4 whitespace-nowrap text-center">
+            <div class="flex items-center justify-center text-sm text-gray-500">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 mr-1.5 opacity-60"></i>
+                <span th:text="${job.startTime}"></span>
+            </div>
+        </td>
     </tr>
+
     <tr th:if="${#lists.isEmpty(jobs)}">
-        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-2 text-gray-300"></i>
-            <p>No recent uploads</p>
+        <td colspan="6" class="px-6 py-12 text-center text-gray-500 bg-gray-50/50">
+            <div class="flex flex-col items-center justify-center">
+                <div class="p-4 bg-gray-100 rounded-full mb-3">
+                    <i data-lucide="inbox" class="w-8 h-8 text-gray-300"></i>
+                </div>
+                <p class="font-medium text-gray-600">No recent uploads detected</p>
+            </div>
         </td>
     </tr>
 </th:block>
