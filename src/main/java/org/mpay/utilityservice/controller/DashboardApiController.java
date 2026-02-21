@@ -13,6 +13,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,6 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/dashboard/api")
-@RequiredArgsConstructor
 @Slf4j
 public class DashboardApiController {
 
@@ -36,6 +36,19 @@ public class DashboardApiController {
     private final GarageS3Service s3Service;
     private final ElectricityBillService billService;
     private final JobMonitoringService jobMonitoringService;
+
+    public DashboardApiController(
+            @Qualifier("asyncJobLauncher") JobLauncher jobLauncher,
+            Job importElectricityBillJob,
+            GarageS3Service s3Service,
+            ElectricityBillService billService,
+            JobMonitoringService jobMonitoringService) {
+        this.jobLauncher = jobLauncher;
+        this.importElectricityBillJob = importElectricityBillJob;
+        this.s3Service = s3Service;
+        this.billService = billService;
+        this.jobMonitoringService = jobMonitoringService;
+    }
 
     @PostMapping(value = "/upload", produces = MediaType.TEXT_HTML_VALUE)
     public String uploadFile(@RequestParam("file") MultipartFile file, Model model) {
@@ -52,7 +65,9 @@ public class DashboardApiController {
                     .addLong("time", System.currentTimeMillis())
                     .toJobParameters();
 
+            log.info("[THREAD {}] Controller: Triggering JobLauncher...", Thread.currentThread().getName());
             JobExecution jobExecution = jobLauncher.run(importElectricityBillJob, params);
+            log.info("[THREAD {}] Controller: Job submitted successfully (ID: {}). Returning response to UI.", Thread.currentThread().getName(), jobExecution.getId());
 
             model.addAttribute("success", true);
             model.addAttribute("message", "File uploaded successfully. Processing started.");

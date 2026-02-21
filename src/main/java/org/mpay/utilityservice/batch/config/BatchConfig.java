@@ -80,7 +80,7 @@ public class BatchConfig {
         return executor;
     }
 
-    @Bean(name = "jobLauncher")
+    @Bean(name = "asyncJobLauncher")
     public JobLauncher getJobLauncher(JobRepository jobRepository) throws Exception {
         TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
         jobLauncher.setJobRepository(jobRepository);
